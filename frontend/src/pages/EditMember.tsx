@@ -21,6 +21,7 @@ interface MemberProps {
   bodyFatPercentage: string;
   activityLevel: string;
   goal: string;
+  memo: string;
   address: string;
   detailAddress: string;
   deliveryMessage: string;
@@ -33,14 +34,34 @@ const EditMember = () => {
     id: string;
     section: string;
   }>();
-  const [memberDetail, setMemberDetail] = useState<MemberProps | null>(null);
+  const [memberDetail, setMemberDetail] = useState<MemberProps>({
+    client_id: "",
+    name: "",
+    phone: "",
+    gender: "",
+    birthdate: "",
+    height: "",
+    weight: "",
+    muscleMass: "",
+    bodyFatMass: "",
+    bodyFatPercentage: "",
+    activityLevel: "",
+    goal: "",
+    memo: "",
+    address: "",
+    detailAddress: "",
+    deliveryMessage: "",
+    entryMethod: "",
+    entryPassword: "",
+  });
+  const [updatedData, setUpdatedData] = useState<Partial<MemberProps>>({});
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMemberDetail = async () => {
       try {
         const response = await apiClient.get(
-          `client/detail?client_id=${clientId}&section=${section}`
+          `/client/edit?client_id=${clientId}&section=${section}`
         );
         setMemberDetail(JSON.parse(response.data));
       } catch (error) {
@@ -49,11 +70,11 @@ const EditMember = () => {
     };
 
     fetchMemberDetail();
-  }, [clientId]);
+  }, [clientId, section]);
 
-  const handleSave = async (updatedData: Partial<MemberProps>) => {
+  const handleSave = async () => {
     try {
-      await apiClient.patch(`client/update/`, {
+      await apiClient.patch(`/client/edit/`, {
         section,
         ...memberDetail,
         ...updatedData,
@@ -65,6 +86,13 @@ const EditMember = () => {
     }
   };
 
+  const handleChange = (field: keyof MemberProps, value: string) => {
+    setUpdatedData({
+      ...updatedData,
+      [field]: value,
+    });
+  };
+
   if (!memberDetail) {
     return <div>Loading...</div>;
   }
@@ -74,61 +102,85 @@ const EditMember = () => {
       case "personal":
         return (
           <PersonalInfo
-            name={memberDetail.name}
-            setName={(name) => handleSave({ name })}
-            phone={memberDetail.phone}
-            setPhone={(phone) => handleSave({ phone })}
-            gender={memberDetail.gender}
-            setGender={(gender) => handleSave({ gender })}
-            birthdate={memberDetail.birthdate}
-            setBirthdate={(birthdate) => handleSave({ birthdate })}
+            name={updatedData.name || memberDetail.name || ""}
+            setName={(name) => handleChange("name", name)}
+            phone={updatedData.phone || memberDetail.phone || ""}
+            setPhone={(phone) => handleChange("phone", phone)}
+            gender={updatedData.gender || memberDetail.gender || ""}
+            setGender={(gender) => handleChange("gender", gender)}
+            birthdate={updatedData.birthdate || memberDetail.birthdate || ""}
+            setBirthdate={(birthdate) => handleChange("birthdate", birthdate)}
           />
         );
       case "physical":
         return (
           <PhysicalInfo
-            height={memberDetail.height}
-            setHeight={(height) => handleSave({ height })}
-            weight={memberDetail.weight}
-            setWeight={(weight) => handleSave({ weight })}
-            muscleMass={memberDetail.muscleMass}
-            setMuscleMass={(muscleMass) => handleSave({ muscleMass })}
-            bodyFatMass={memberDetail.bodyFatMass}
-            setBodyFatMass={(bodyFatMass) => handleSave({ bodyFatMass })}
-            bodyFatPercentage={memberDetail.bodyFatPercentage}
+            height={updatedData.height || memberDetail.height || ""}
+            setHeight={(height) => handleChange("height", height)}
+            weight={updatedData.weight || memberDetail.weight || ""}
+            setWeight={(weight) => handleChange("weight", weight)}
+            muscleMass={updatedData.muscleMass || memberDetail.muscleMass || ""}
+            setMuscleMass={(muscleMass) =>
+              handleChange("muscleMass", muscleMass)
+            }
+            bodyFatMass={
+              updatedData.bodyFatMass || memberDetail.bodyFatMass || ""
+            }
+            setBodyFatMass={(bodyFatMass) =>
+              handleChange("bodyFatMass", bodyFatMass)
+            }
+            bodyFatPercentage={
+              updatedData.bodyFatPercentage ||
+              memberDetail.bodyFatPercentage ||
+              ""
+            }
             setBodyFatPercentage={(bodyFatPercentage) =>
-              handleSave({ bodyFatPercentage })
+              handleChange("bodyFatPercentage", bodyFatPercentage)
             }
           />
         );
       case "goal":
         return (
           <GoalActivityInfo
-            activityLevel={memberDetail.activityLevel}
-            setActivityLevel={(activityLevel) => handleSave({ activityLevel })}
-            goal={memberDetail.goal}
-            setGoal={(goal) => handleSave({ goal })}
-            notes=""
-            setNotes={() => {}}
+            activityLevel={
+              updatedData.activityLevel || memberDetail.activityLevel || ""
+            }
+            setActivityLevel={(activityLevel) =>
+              handleChange("activityLevel", activityLevel)
+            }
+            goal={updatedData.goal || memberDetail.goal || ""}
+            setGoal={(goal) => handleChange("goal", goal)}
+            notes={updatedData.memo || memberDetail.memo || ""}
+            setNotes={(memo) => handleChange("memo", memo)}
           />
         );
       case "delivery":
         return (
           <AddressDeliveryInfo
-            address={memberDetail.address}
-            setAddress={(address) => handleSave({ address })}
-            detailAddress={memberDetail.detailAddress}
-            setDetailAddress={(detailAddress) => handleSave({ detailAddress })}
-            deliveryMessage={memberDetail.deliveryMessage}
+            address={updatedData.address || memberDetail.address || ""}
+            setAddress={(address) => handleChange("address", address)}
+            detailAddress={
+              updatedData.detailAddress || memberDetail.detailAddress || ""
+            }
+            setDetailAddress={(detailAddress) =>
+              handleChange("detailAddress", detailAddress)
+            }
+            deliveryMessage={
+              updatedData.deliveryMessage || memberDetail.deliveryMessage || ""
+            }
             setDeliveryMessage={(deliveryMessage) =>
-              handleSave({ deliveryMessage })
+              handleChange("deliveryMessage", deliveryMessage)
             }
-            entryMethod={parseInt(memberDetail.entryMethod)}
+            entryMethod={updatedData.entryMethod || memberDetail.entryMethod}
             setEntryMethod={(entryMethod) =>
-              handleSave({ entryMethod: entryMethod.toString() })
+              handleChange("entryMethod", entryMethod)
             }
-            entryPassword={memberDetail.entryPassword}
-            setEntryPassword={(entryPassword) => handleSave({ entryPassword })}
+            entryPassword={
+              updatedData.entryPassword || memberDetail.entryPassword || ""
+            }
+            setEntryPassword={(entryPassword) =>
+              handleChange("entryPassword", entryPassword)
+            }
           />
         );
       default:
@@ -142,7 +194,7 @@ const EditMember = () => {
       {renderSection()}
       <div className="button-wrapper">
         <Button text="취소하기" onClick={() => navigate(-1)} color="sub" />
-        <Button text="수정하기" onClick={() => handleSave({})} color="main" />
+        <Button text="수정하기" onClick={handleSave} color="main" />
       </div>
     </Container>
   );
